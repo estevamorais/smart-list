@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import HeaderFilter from './HeaderFilter';
 import ListCards from './ListCards';
 import ListMap from './ListMap';
 import ListTable from './ListTable';
-import { Box, Divider } from '@mui/material';
+import { Box, Divider, useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 // Dados genéricos
 const data: Record<string, any>[] = [
@@ -93,6 +94,8 @@ export const properties = [
 ];
 
 const SmartList = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [activeList, setActiveList] = useState<'table' | 'cards' | 'map'>('table');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProperties, setSelectedProperties] = useState<string[]>(['Todos']);
@@ -119,6 +122,12 @@ const SmartList = () => {
       })
     : filteredData;
 
+  useEffect(() => {
+    if (activeList === 'table') {
+      setActiveList(isMobile ? 'cards' : 'table');
+    }
+  }, [isMobile]);
+
   return (
     <Box>
       <HeaderFilter
@@ -131,6 +140,7 @@ const SmartList = () => {
         setSelectedProperties={setSelectedProperties}
         sortBy={sortBy}  // Passando o sortBy
         setSortBy={setSortBy}  // Passando a função setSortBy
+        showAddButton={true}
       />
       <Divider sx={{ my: 2 }} />
 
