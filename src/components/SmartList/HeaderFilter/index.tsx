@@ -1,17 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Button,
-  TextField,
-  MenuItem,
-  Checkbox,
-  FormControl,
-  InputLabel,
-  Select,
-  ListItemText,
-  SelectChangeEvent
+  IconButton,
+  Tooltip,
+  Drawer,
+  useMediaQuery
 } from '@mui/material';
-import { TableView, ViewComfy, Map, Search } from '@mui/icons-material';
+import { TableView, ViewComfy, Map, Add, FilterList } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
+import Filters from './Filters'; // Importando o componente Filters
 
 interface HeaderFilterProps {
   activeList: 'table' | 'cards' | 'map';
@@ -23,6 +21,7 @@ interface HeaderFilterProps {
   setSelectedProperties: React.Dispatch<React.SetStateAction<string[]>>;
   sortBy: string;
   setSortBy: React.Dispatch<React.SetStateAction<string>>;
+  showAddButton?: boolean;
 }
 
 const HeaderFilter: React.FC<HeaderFilterProps> = ({
@@ -34,136 +33,126 @@ const HeaderFilter: React.FC<HeaderFilterProps> = ({
   selectedProperties,
   setSelectedProperties,
   sortBy,
-  setSortBy
+  setSortBy,
+  showAddButton = false
 }) => {
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
-  };
-
-  const handlePropertyChange = (event: SelectChangeEvent<string[]>) => {
-    const value = event.target.value;
-    setSelectedProperties(typeof value === 'string' ? value.split(',') : value);
-  };
-
-  const handleSortChange = (event: SelectChangeEvent<string>) => {
-    setSortBy(event.target.value);
-  };
-
-  const areAllPropertiesSelected = properties.every((property) =>
-    selectedProperties.includes(property.name)
-  );
-
-  useEffect(() => {
-    setSelectedProperties(properties.map((p) => p.name));
-  }, [properties, setSelectedProperties]);
-
-  // Lógica para exibir botões
-  const hasImageProperty = properties.some((prop) => prop.type === 'image');
-  const hasLatLong = 
-    properties.some((prop) => prop.type === 'lat') && 
-    properties.some((prop) => prop.type === 'long');
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-      <Box sx={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        width: '100%',
-        alignItems: 'center',
-        gap: 3,
-        maxWidth: '1200px',
-        padding: '0 16px'
-      }}>
-        {/* Botões de navegação */}
-        <Box sx={{ display: 'flex', gap: 3 }}>
-          <Button
-            onClick={() => setActiveList('table')}
-            variant={activeList === 'table' ? 'contained' : 'outlined'}
-            color={activeList === 'table' ? 'primary' : 'inherit'}
-            startIcon={<TableView sx={{ fontSize: 28 }} />}
-          >
-            Tabela
-          </Button>
-
-          {hasImageProperty && (
-            <Button
-              onClick={() => setActiveList('cards')}
-              variant={activeList === 'cards' ? 'contained' : 'outlined'}
-              color={activeList === 'cards' ? 'primary' : 'inherit'}
-              startIcon={<ViewComfy sx={{ fontSize: 28 }} />}
-            >
-              Cartões
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          width: '100%',
+          alignItems: 'center',
+          gap: 3,
+          maxWidth: '1200px',
+          padding: '0 16px',
+          flexWrap: 'wrap'
+        }}
+      >
+        {/* Botões sempre visíveis */}
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'space-between' }}>
+          {showAddButton && (
+            <Button variant="contained" color="primary" startIcon={<Add />}>
+              {isMobile ? 'Adicionar' : 'Adicionar Novo' }
             </Button>
           )}
 
-          {hasLatLong && (
-            <Button
-              onClick={() => setActiveList('map')}
-              variant={activeList === 'map' ? 'contained' : 'outlined'}
-              color={activeList === 'map' ? 'primary' : 'inherit'}
-              startIcon={<Map sx={{ fontSize: 28 }} />}
+          <Tooltip title="Visualizar em Tabela">
+            <IconButton
+              onClick={() => setActiveList('table')}
+              color={activeList === 'table' ? 'primary' : 'default'}
             >
-              Mapa
-            </Button>
-          )}
-        </Box>
+              <TableView />
+            </IconButton>
+          </Tooltip>
 
-        {/* Campo de pesquisa e filtro */}
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-          <TextField
-            label="Buscar"
-            variant="outlined"
-            value={searchQuery}
-            onChange={handleSearchChange}
-            sx={{ width: '250px' }}
-            InputProps={{
-              startAdornment: <Search sx={{ marginRight: 1 }} />
-            }}
-          />
-
-          <FormControl sx={{ minWidth: 180, width: 250 }}>
-            <InputLabel>Filtrar Por</InputLabel>
-            <Select
-              multiple
-              value={selectedProperties}
-              onChange={handlePropertyChange}
-              renderValue={(selected) =>
-                areAllPropertiesSelected ? 'Todos' : selected.join(', ')
-              }
-              label="Filtrar Por"
-            >
-              {properties.map((property) => (
-                <MenuItem key={property.name} value={property.name}>
-                  <Checkbox checked={selectedProperties.includes(property.name)} />
-                  <ListItemText primary={property.name} />
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          {/* Dropdown de ordenação - visível apenas em 'table' ou 'cards' */}
-          {['table', 'cards'].includes(activeList) && (
-            <FormControl sx={{ minWidth: 180 }}>
-              <InputLabel>Ordenar Por</InputLabel>
-              <Select
-                value={sortBy}
-                onChange={handleSortChange}
-                label="Ordenar Por"
-                disabled={activeList !== 'table' && activeList !== 'cards'}
+          {properties.some((prop) => prop.type === 'image') && (
+            <Tooltip title="Visualizar em Cartões">
+              <IconButton
+                onClick={() => setActiveList('cards')}
+                color={activeList === 'cards' ? 'primary' : 'default'}
               >
-                <MenuItem value="">Nenhum</MenuItem>
-                {properties
-                  .filter((prop) => prop.type === 'text' || prop.type === 'number') // Filtro para ordenar por texto e número
-                  .map((property) => (
-                    <MenuItem key={property.name} value={property.name}>
-                      {property.name}
-                    </MenuItem>
-                  ))}
-              </Select>
-            </FormControl>
+                <ViewComfy />
+              </IconButton>
+            </Tooltip>
+          )}
+
+          {properties.some((prop) => prop.type === 'lat') && (
+            <Tooltip title="Visualizar no Mapa">
+              <IconButton
+                onClick={() => setActiveList('map')}
+                color={activeList === 'map' ? 'primary' : 'default'}
+              >
+                <Map />
+              </IconButton>
+            </Tooltip>
+          )}
+
+          {isMobile && (
+            <Tooltip title="Abrir filtros">
+              <IconButton onClick={() => setFiltersOpen(true)}>
+                <FilterList />
+              </IconButton>
+            </Tooltip>
           )}
         </Box>
+
+        {/* Filtros visíveis só no desktop */}
+        {!isMobile && (
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 2,
+              alignItems: 'center',
+              flexDirection: 'row', // Exibindo os filtros em linha no desktop
+              flexWrap: 'wrap',
+            }}
+          >
+            <Filters
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              properties={properties}
+              selectedProperties={selectedProperties}
+              setSelectedProperties={setSelectedProperties}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              activeList={activeList}
+            />
+          </Box>
+        )}
       </Box>
+
+      {/* Drawer para filtros no mobile com largura controlada */}
+      <Drawer
+        anchor="right"
+        open={filtersOpen}
+        onClose={() => setFiltersOpen(false)}
+        sx={{
+          width: 300, // Largura fixa do Drawer
+          maxWidth: '90vw', // A largura máxima será 90% da largura da tela
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: 300, // Largura fixa do papel do Drawer
+            maxWidth: '90vw', // Largura máxima do papel
+          }
+        }}
+      >
+        <Filters
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          properties={properties}
+          selectedProperties={selectedProperties}
+          setSelectedProperties={setSelectedProperties}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          activeList={activeList}
+        />
+      </Drawer>
     </Box>
   );
 };
