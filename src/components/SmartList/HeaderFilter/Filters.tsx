@@ -10,7 +10,7 @@ import {
   SelectChangeEvent,
   Box,
   Typography,
-  useMediaQuery
+  useMediaQuery,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Search } from '@mui/icons-material';
@@ -24,6 +24,8 @@ interface FiltersProps {
   sortBy: string;
   setSortBy: React.Dispatch<React.SetStateAction<string>>;
   activeList: 'table' | 'cards' | 'map';
+  groupBy: string;
+  setGroupBy: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const Filters: React.FC<FiltersProps> = ({
@@ -34,7 +36,9 @@ const Filters: React.FC<FiltersProps> = ({
   setSelectedProperties,
   sortBy,
   setSortBy,
-  activeList
+  activeList,
+  groupBy,
+  setGroupBy,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -64,13 +68,26 @@ const Filters: React.FC<FiltersProps> = ({
     setSortBy(event.target.value);
   };
 
+  const handleGroupChange = (event: SelectChangeEvent<string>) => {
+    setGroupBy(event.target.value);
+  };
+
+  // Apenas text/number podem ser usados para ordenar/agrupamento
+  const orderableProps = properties.filter((p) => p.type === 'text' || p.type === 'number');
+
+  const gridTemplateColumns = {
+    map: '2fr 1fr',
+    cards: '1.5fr 1fr 1fr 1fr',
+    table: '1fr 1fr 1fr',
+  };
+
   return (
     <Box
       sx={{
         p: 2,
-        width: isMobile ? '90%' : 700,
+        width: isMobile ? '90%' : 720,
         display: isMobile ? 'grid' : 'grid',
-        gridTemplateColumns: isMobile ? '1fr' : activeList === 'map' ? '2fr 1fr' : '2fr 1fr 1fr',
+        gridTemplateColumns: isMobile ? '1fr' : gridTemplateColumns[activeList],
         gap: 2,
       }}
     >
@@ -80,70 +97,83 @@ const Filters: React.FC<FiltersProps> = ({
         </Typography>
       )}
 
-        {/* Buscar */}
-        <TextField
-          label="Buscar"
-          variant="outlined"
-          value={searchQuery}
-          onChange={handleSearchChange}
-          InputProps={{
-            startAdornment: <Search sx={{ marginRight: 1 }} />
-          }}
-          fullWidth
-        />
+      {/* Buscar */}
+      <TextField
+        label="Buscar"
+        variant="outlined"
+        value={searchQuery}
+        onChange={handleSearchChange}
+        InputProps={{
+          startAdornment: <Search sx={{ marginRight: 1 }} />
+        }}
+        fullWidth
+      />
 
-        {/* Filtrar Por */}
-        <FormControl fullWidth>
-          <InputLabel>Filtrar Por</InputLabel>
-          <Select
-            multiple
-            value={
-              selectedProperties.length === properties.length
-                ? ['Todos', ...selectedProperties]
-                : selectedProperties
-            }
-            onChange={handlePropertyChange}
-            renderValue={(selected) =>
-              selected.includes('Todos') || selectedProperties.length === properties.length
-                ? 'Todos'
-                : selected.join(', ')
-            }
-            label="Filtrar Por"
-          >
-            <MenuItem value="Todos">
-              <Checkbox checked={selectedProperties.length === properties.length} />
-              <ListItemText primary="Todos" />
+      {/* Filtrar Por */}
+      <FormControl fullWidth>
+        <InputLabel>Filtrar Por</InputLabel>
+        <Select
+          multiple
+          value={
+            selectedProperties.length === properties.length
+              ? ['Todos', ...selectedProperties]
+              : selectedProperties
+          }
+          onChange={handlePropertyChange}
+          renderValue={(selected) =>
+            selected.includes('Todos') || selectedProperties.length === properties.length
+              ? 'Todos'
+              : (selected as string[]).join(', ')
+          }
+          label="Filtrar Por"
+        >
+          <MenuItem value="Todos">
+            <Checkbox checked={selectedProperties.length === properties.length} />
+            <ListItemText primary="Todos" />
+          </MenuItem>
+
+          {properties.map((property) => (
+            <MenuItem key={property.name} value={property.name}>
+              <Checkbox checked={selectedProperties.includes(property.name)} />
+              <ListItemText primary={property.name} />
             </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
 
-            {properties.map((property) => (
+      {/* Ordenar Por (somente table/cards) */}
+      {['table', 'cards'].includes(activeList) ? (
+        <FormControl fullWidth>
+          <InputLabel>Ordenar Por</InputLabel>
+          <Select value={sortBy} onChange={handleSortChange} label="Ordenar Por">
+            <MenuItem value="">Nenhum</MenuItem>
+            {orderableProps.map((property) => (
               <MenuItem key={property.name} value={property.name}>
-                <Checkbox checked={selectedProperties.includes(property.name)} />
-                <ListItemText primary={property.name} />
+                {property.name}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
+      ) : (
+        <Box /> // placeholder para manter grid alinhado
+      )}
 
-        {/* Ordenar */}
-        {['table', 'cards'].includes(activeList) && (
-          <FormControl fullWidth>
-            <InputLabel>Ordenar Por</InputLabel>
-            <Select
-              value={sortBy}
-              onChange={handleSortChange}
-              label="Ordenar Por"
-            >
-              <MenuItem value="">Nenhum</MenuItem>
-              {properties
-                .filter((prop) => prop.type === 'text' || prop.type === 'number')
-                .map((property) => (
-                  <MenuItem key={property.name} value={property.name}>
-                    {property.name}
-                  </MenuItem>
-                ))}
-            </Select>
-          </FormControl>
-        )}
+      {/* Agrupar Por (somente cards) */}
+      {activeList === 'cards' ? (
+        <FormControl fullWidth>
+          <InputLabel>Agrupar Por</InputLabel>
+          <Select value={groupBy} onChange={handleGroupChange} label="Agrupar Por" defaultValue="">
+            <MenuItem value="">Nenhum</MenuItem>
+            {orderableProps.map((property) => (
+              <MenuItem key={property.name} value={property.name}>
+                {property.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      ) : (
+        <Box /> // placeholder para manter grid alinhado
+      )}
     </Box>
   );
 };

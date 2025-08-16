@@ -5,11 +5,11 @@ import {
   IconButton,
   Tooltip,
   Drawer,
-  useMediaQuery
+  useMediaQuery,
 } from '@mui/material';
-import { TableView, ViewComfy, Map, Add, FilterList } from '@mui/icons-material';
+  import { TableView, ViewComfy, Map, Add, FilterList } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
-import Filters from './Filters'; // Importando o componente Filters
+import Filters from './Filters';
 
 interface HeaderFilterProps {
   activeList: 'table' | 'cards' | 'map';
@@ -22,6 +22,8 @@ interface HeaderFilterProps {
   sortBy: string;
   setSortBy: React.Dispatch<React.SetStateAction<string>>;
   showAddButton?: boolean;
+  groupBy: string;
+  setGroupBy: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const HeaderFilter: React.FC<HeaderFilterProps> = ({
@@ -34,11 +36,18 @@ const HeaderFilter: React.FC<HeaderFilterProps> = ({
   setSelectedProperties,
   sortBy,
   setSortBy,
-  showAddButton = false
+  showAddButton = false,
+  groupBy,
+  setGroupBy,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const hasImageProperty = properties.some((prop) => prop.type === 'image');
+  const hasLatLong =
+    properties.some((prop) => prop.type === 'lat') &&
+    properties.some((prop) => prop.type === 'long');
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
@@ -51,14 +60,14 @@ const HeaderFilter: React.FC<HeaderFilterProps> = ({
           gap: 3,
           maxWidth: '1200px',
           padding: '0 16px',
-          flexWrap: 'wrap'
+          flexWrap: 'wrap',
         }}
       >
         {/* Botões sempre visíveis */}
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'space-between' }}>
           {showAddButton && (
             <Button variant="contained" color="primary" startIcon={<Add />}>
-              {isMobile ? 'Adicionar' : 'Adicionar Novo' }
+              {isMobile ? 'Adicionar' : 'Adicionar Novo'}
             </Button>
           )}
 
@@ -71,7 +80,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = ({
             </IconButton>
           </Tooltip>
 
-          {properties.some((prop) => prop.type === 'image') && (
+          {hasImageProperty && (
             <Tooltip title="Visualizar em Cartões">
               <IconButton
                 onClick={() => setActiveList('cards')}
@@ -82,7 +91,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = ({
             </Tooltip>
           )}
 
-          {properties.some((prop) => prop.type === 'lat') && (
+          {hasLatLong && (
             <Tooltip title="Visualizar no Mapa">
               <IconButton
                 onClick={() => setActiveList('map')}
@@ -102,17 +111,9 @@ const HeaderFilter: React.FC<HeaderFilterProps> = ({
           )}
         </Box>
 
-        {/* Filtros visíveis só no desktop */}
+        {/* Filtros visíveis só no desktop (em ROW) */}
         {!isMobile && (
-          <Box
-            sx={{
-              display: 'flex',
-              gap: 2,
-              alignItems: 'center',
-              flexDirection: 'row', // Exibindo os filtros em linha no desktop
-              flexWrap: 'wrap',
-            }}
-          >
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
             <Filters
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
@@ -122,24 +123,26 @@ const HeaderFilter: React.FC<HeaderFilterProps> = ({
               sortBy={sortBy}
               setSortBy={setSortBy}
               activeList={activeList}
+              groupBy={groupBy}
+              setGroupBy={setGroupBy}
             />
           </Box>
         )}
       </Box>
 
-      {/* Drawer para filtros no mobile com largura controlada */}
+      {/* Drawer no mobile com largura controlada */}
       <Drawer
         anchor="right"
         open={filtersOpen}
         onClose={() => setFiltersOpen(false)}
         sx={{
-          width: 300, // Largura fixa do Drawer
-          maxWidth: '90vw', // A largura máxima será 90% da largura da tela
+          width: 300,
+          maxWidth: '90vw',
           flexShrink: 0,
           '& .MuiDrawer-paper': {
-            width: 300, // Largura fixa do papel do Drawer
-            maxWidth: '90vw', // Largura máxima do papel
-          }
+            width: 300,
+            maxWidth: '90vw',
+          },
         }}
       >
         <Filters
@@ -151,6 +154,8 @@ const HeaderFilter: React.FC<HeaderFilterProps> = ({
           sortBy={sortBy}
           setSortBy={setSortBy}
           activeList={activeList}
+          groupBy={groupBy}
+          setGroupBy={setGroupBy}
         />
       </Drawer>
     </Box>
