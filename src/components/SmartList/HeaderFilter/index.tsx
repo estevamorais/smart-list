@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -7,7 +7,7 @@ import {
   Drawer,
   useMediaQuery,
 } from '@mui/material';
-  import { TableView, ViewComfy, Map, Add, FilterList } from '@mui/icons-material';
+import { TableView, ViewComfy, Map, Add, FilterList } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import Filters from './Filters';
 
@@ -43,6 +43,14 @@ const HeaderFilter: React.FC<HeaderFilterProps> = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const groupByOptions = useMemo(
+    () =>
+      properties
+        .filter((prop) => prop.type === 'text' || prop.type === 'number')
+        .map((prop) => prop.name),
+    [properties]
+  );
 
   const hasImageProperty = properties.some((prop) => prop.type === 'image');
   const hasLatLong =
@@ -125,6 +133,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = ({
               activeList={activeList}
               groupBy={groupBy}
               setGroupBy={setGroupBy}
+              groupByOptions={groupByOptions}
             />
           </Box>
         )}
@@ -156,6 +165,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = ({
           activeList={activeList}
           groupBy={groupBy}
           setGroupBy={setGroupBy}
+          groupByOptions={groupByOptions}
         />
       </Drawer>
     </Box>

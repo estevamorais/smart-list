@@ -5,7 +5,7 @@ import ListMap from './ListMap';
 import ListTable from './ListTable';
 import { Box, Divider, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { data, properties, groupByOptions, defaultGroupBy } from '../../data'; 
+import { data, properties, defaultGroupBy } from '../../data'; 
 
 const SmartList = () => {
   const theme = useTheme();
@@ -58,7 +58,6 @@ const SmartList = () => {
         showAddButton={true}
         groupBy={groupBy}
         setGroupBy={setGroupBy}
-        groupByOptions={groupByOptions}
       />
       <Divider sx={{ my: 2 }} />
 

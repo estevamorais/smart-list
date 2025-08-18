@@ -26,6 +26,7 @@ interface FiltersProps {
   activeList: 'table' | 'cards' | 'map';
   groupBy: string;
   setGroupBy: React.Dispatch<React.SetStateAction<string>>;
+  groupByOptions?: string[];
 }
 
 const Filters: React.FC<FiltersProps> = ({
@@ -39,6 +40,7 @@ const Filters: React.FC<FiltersProps> = ({
   activeList,
   groupBy,
   setGroupBy,
+  groupByOptions = [],
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -162,12 +164,13 @@ const Filters: React.FC<FiltersProps> = ({
       {activeList === 'cards' ? (
         <FormControl fullWidth>
           <InputLabel>Agrupar Por</InputLabel>
-          <Select value={groupBy} onChange={handleGroupChange} label="Agrupar Por" defaultValue="">
+          <Select value={groupBy} onChange={handleGroupChange} label="Agrupar Por">
             <MenuItem value="">Nenhum</MenuItem>
-            {orderableProps.map((property) => (
-              <MenuItem key={property.name} value={property.name}>
-                {property.name}
-              </MenuItem>
+            {(groupByOptions && groupByOptions.length > 0
+              ? groupByOptions
+              : properties.filter(p => p.type === 'text' || p.type === 'number').map(p => p.name)
+            ).map((name) => (
+              <MenuItem key={name} value={name}>{name}</MenuItem>
             ))}
           </Select>
         </FormControl>

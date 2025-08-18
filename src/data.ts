@@ -172,11 +172,6 @@ const properties = [
   { name: 'long', type: 'long' },
 ];
 
-// Obejto de opções para agrupamento
-const groupByOptions = properties
-  .filter((prop) => prop.type === 'text' || prop.type === 'number')
-  .map((prop) => prop.name);
+const defaultGroupBy = 'idade'; // Agrupamento padrão
 
-const defaultGroupBy = 'cargo'; // Agrupamento padrão
-
-export {  data, properties, groupByOptions, defaultGroupBy };
+export {  data, properties, defaultGroupBy };

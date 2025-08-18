@@ -1,3 +1,4 @@
+// src/components/SmartList/ListCards/GroupedView.tsx
 import React from 'react';
 import { Box, Chip, Divider, Stack, Typography } from '@mui/material';
 import ItemCard, { Property } from './ItemCard';
@@ -44,7 +45,7 @@ const GroupedView: React.FC<GroupedViewProps> = ({ data, properties, groupBy }) 
             <Divider sx={{ mb: 1.5 }} />
 
             <Stack spacing={1.5}>
-              {items.map((item, idx) => (
+              {items.map((item: Record<string, any>, idx: number) => (
                 <ItemCard key={idx} item={item} properties={properties} compact />
               ))}
             </Stack>

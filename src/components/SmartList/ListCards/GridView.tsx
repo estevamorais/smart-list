@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid } from '@mui/material';
+import { Box } from '@mui/material';
 import ItemCard, { Property } from './ItemCard';
 
 interface GridViewProps {
@@ -9,13 +9,29 @@ interface GridViewProps {
 
 const GridView: React.FC<GridViewProps> = ({ data, properties }) => {
   return (
-    <Grid container spacing={2}>
+    <Box
+      sx={{
+        display: 'grid',
+        gap: 2,
+        gridTemplateColumns: {
+          xs: '1fr',  
+          sm: '1fr 1fr',
+          md: '1fr 1fr 1fr',
+        },
+      }}
+    >
       {data.map((item, index) => (
-        <Grid key={index} item xs={12} sm={6} md={4}>
+        <Box
+          key={index}
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
           <ItemCard item={item} properties={properties} />
-        </Grid>
+        </Box>
       ))}
-    </Grid>
+    </Box>
   );
 };
 
